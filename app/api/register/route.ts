@@ -1,46 +1,37 @@
 import { NextResponse } from 'next/server';
-import { promises as fs } from 'fs';
-import path from 'path';
-
-const usersFile = path.join(process.cwd(), 'users.json');
+import connectDB from '@/lib/mongodb';
+import User from '@/models/User';
 
 export async function POST(req: Request) {
+  console.log('📩 [REGISTER] Incoming request...');
+
   try {
-    const { email, password, name } = await req.json();
+    await connectDB();
 
-    if (!email || !password || !name) {
-      return NextResponse.json(
-        { message: 'All fields are required' },
-        { status: 400 },
-      );
+    const { name, email, password } = await req.json();
+    console.log('📨 Received data:', { name, email, password });
+
+    if (!name || !email || !password) {
+      return NextResponse.json({ message: 'All fields are required' }, { status: 400 });
     }
 
-    let users: any[] = [];
-    try {
-      const data = await fs.readFile(usersFile, 'utf-8');
-      users = data.trim() ? JSON.parse(data) : [];
-    } catch {
-      users = [];
-    }
-
-    const existingUser = users.find((u) => u.email === email);
+    const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return NextResponse.json(
-        { message: 'User already exists' },
-        { status: 400 },
-      );
+      return NextResponse.json({ message: 'User already exists' }, { status: 400 });
     }
 
-    users.push({ email, password, name });
-    await fs.writeFile(usersFile, JSON.stringify(users, null, 2));
+    const newUser = new User({ name, email, password });
+    await newUser.save();
 
-    console.log(`✅ User registered: ${email}`);
-    return NextResponse.json({ ok: true });
-  } catch (err) {
-    console.error('❌ Registration error:', err);
+    console.log('✅ User saved successfully:', newUser);
+
+    // ✅ Important: add ok: true
     return NextResponse.json(
-      { message: 'Internal server error' },
-      { status: 500 },
+      { ok: true, message: 'User registered successfully', user: newUser },
+      { status: 201 }
     );
+  } catch (error: any) {
+    console.error('❌ Register error:', error.message || error);
+    return NextResponse.json({ message: 'Server error' }, { status: 500 });
   }
 }

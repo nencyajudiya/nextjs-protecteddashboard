@@ -1,3 +1,4 @@
+// nextjs-protecteddashboard/proxy.ts
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
