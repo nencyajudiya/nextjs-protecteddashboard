@@ -18,34 +18,34 @@ export default function LoginContent() {
     password: Yup.string().required('Required'),
   });
 
-const handleSubmit = async (values: typeof initialValues) => {
-  try {
-    console.log('[LOGIN PAGE] Submitting login:', values);
+  const handleSubmit = async (values: typeof initialValues) => {
+    try {
+      console.log('[LOGIN PAGE] Submitting login:', values);
 
-    const res = await fetch('/api/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(values),
-      credentials: 'include',
-    });
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(values),
+        credentials: 'include',
+      });
 
-    console.log('[LOGIN PAGE] Response status:', res.status);
+      console.log('[LOGIN PAGE] Response status:', res.status);
 
-    const data = await res.json();
-    console.log('[LOGIN PAGE] Response data:', data);
+      const data = await res.json();
+      console.log('[LOGIN PAGE] Response data:', data);
 
-    if (!res.ok) {
-      alert('Login failed: ' + data.message);
-      return;
+      if (!res.ok) {
+        alert('Login failed: ' + data.message);
+        return;
+      }
+
+      alert('Login successful!');
+      router.push('/dashboard');
+    } catch (err) {
+      console.error('[LOGIN PAGE] Error submitting form:', err);
+      alert('Something went wrong while logging in.');
     }
-
-    alert('Login successful!');
-    router.push('/dashboard'); 
-  } catch (err) {
-    console.error('[LOGIN PAGE] Error submitting form:', err);
-    alert('Something went wrong while logging in.');
-  }
-};
+  };
 
   return (
     <main className='flex items-center justify-center min-h-screen bg-gray-100'>

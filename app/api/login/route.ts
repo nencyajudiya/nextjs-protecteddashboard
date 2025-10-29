@@ -12,20 +12,29 @@ export async function POST(req: Request) {
   const user = await User.findOne({ email, password });
   if (!user) {
     console.log('❌ Invalid credentials');
-    return NextResponse.json({ message: 'Invalid email or password' }, { status: 401 });
+    return NextResponse.json(
+      { message: 'Invalid email or password' },
+      { status: 401 },
+    );
   }
 
   // ✅ Create a lightweight token (no JWT needed for now)
-  const token = Buffer.from(JSON.stringify({ email: user.email, name: user.name })).toString('base64');
+  const token = Buffer.from(
+    JSON.stringify({ email: user.email, name: user.name }),
+  ).toString('base64');
 
   // ✅ Set the cookie
-  const res = NextResponse.json({ ok: true, message: 'Login successful', user });
+  const res = NextResponse.json({
+    ok: true,
+    message: 'Login successful',
+    user,
+  });
 
   res.cookies.set({
     name: 'auth',
     value: token,
     httpOnly: false, // set true if using server-side auth only
-    path: '/',       // <--- ensures cookie is valid for all routes
+    path: '/', // <--- ensures cookie is valid for all routes
     sameSite: 'lax',
   });
 
